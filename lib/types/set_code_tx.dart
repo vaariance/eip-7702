@@ -19,7 +19,7 @@ class Unsigned7702Tx extends Transaction {
     required super.maxFeePerGas,
     required super.maxPriorityFeePerGas,
     this.accessList = const [],
-    required this.authorizationList,
+    this.authorizationList = const [],
   });
 
   @override

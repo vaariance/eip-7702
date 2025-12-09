@@ -1,4 +1,4 @@
-part of '../builder.dart';
+part of '../../builder.dart';
 
 class Eip7702Context {
   final EthereumAddress delegateAddress;

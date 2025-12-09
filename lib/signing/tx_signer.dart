@@ -23,5 +23,5 @@ Signed7702Tx signTransaction(Signer signer, Unsigned7702Tx tx, {int? chainId}) {
 ///    `eth_sendRawTransaction([ rawHex ])`
 HexString parseRawTransaction(Signed7702Tx tx, {int? chainId}) {
   final rawBytes = tx.getSignedSerialized(chainId: chainId);
-  return bytesToHex(rawBytes);
+  return bytesToHex(rawBytes, include0x: true, padToEvenLength: true);
 }
