@@ -16,13 +16,11 @@ class Signer with _$Signer {
 }
 
 extension SignerX on Signer {
-  EIP7702MsgSignature sign(Uint8List digest) {
-    final EthPrivateKey key = when(
-      raw: (value) => EthPrivateKey(value),
-      eth: (value) => value,
-    );
+  EthPrivateKey get ethPrivateKey =>
+      when(raw: (value) => EthPrivateKey(value), eth: (value) => value);
 
-    final signature = key.signToEcSignature(digest, isEIP1559: true);
+  EIP7702MsgSignature sign(Uint8List digest) {
+    final signature = ethPrivateKey.signToEcSignature(digest, isEIP1559: true);
     return EIP7702MsgSignature.forge(signature.r, signature.s, signature.v);
   }
 }

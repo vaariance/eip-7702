@@ -10,11 +10,9 @@ enum Speed {
 }
 
 mixin Eip7702Common on Eip7702Base {
-  Future<int> resolveChainId([int? override]) async {
-    if (override != null) return override;
-    if (ctx.chainId != null) return ctx.chainId!;
-    final chainId = await ctx.web3Client.getChainId();
-    return chainId.toInt();
+  Future<BigInt> resolveChainId() async {
+    ctx.chainId ??= await ctx.web3Client.getChainId();
+    return ctx.chainId!;
   }
 
   Future<BigInt> getNonce(EthereumAddress address) async {

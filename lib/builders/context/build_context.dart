@@ -3,7 +3,7 @@ part of '../builder.dart';
 class Eip7702Context {
   final EthereumAddress delegateAddress;
   final Web3Client web3Client;
-  final int? chainId;
+  BigInt? chainId;
 
   Eip7702Context({
     required this.delegateAddress,
@@ -20,7 +20,7 @@ class Eip7702Context {
     return Eip7702Context(
       delegateAddress: delegateAddress,
       web3Client: client,
-      chainId: chainId.toInt(),
+      chainId: chainId,
     );
   }
 }
