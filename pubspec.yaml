@@ -13,6 +13,7 @@ dependencies:
   web3dart: ^3.0.1
   wallet: ^0.0.18
   freezed_annotation: ^3.1.0
+  http: ^1.6.0
 
 
 dev_dependencies:
