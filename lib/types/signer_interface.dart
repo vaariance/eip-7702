@@ -11,8 +11,8 @@ class EIP7702MsgSignature extends MsgSignature {
 
 @freezed
 class Signer with _$Signer {
-  const factory Signer.raw(Uint8List rawPrivateKey) = RawSigner;
   const factory Signer.eth(EthPrivateKey ethPrivateKey) = EthSigner;
+  const factory Signer.raw(Uint8List rawPrivateKey) = RawSigner;
 }
 
 extension SignerX on Signer {

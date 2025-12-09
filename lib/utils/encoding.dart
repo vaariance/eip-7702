@@ -42,7 +42,10 @@ List<dynamic> encodeEIP1559ToRlp(
     ..add(transaction.data);
 
   list.add(transaction.accessList);
-  list.add(encodeAuthorizationListToRlp(transaction.authorizationList));
+
+  if (transaction.transactionType == TransactionType.eip7702) {
+    list.add(encodeAuthorizationListToRlp(transaction.authorizationList));
+  }
 
   if (signature != null) {
     list
