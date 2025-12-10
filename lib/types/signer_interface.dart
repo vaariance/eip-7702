@@ -5,8 +5,10 @@ class EIP7702MsgSignature extends MsgSignature {
 
   EIP7702MsgSignature(super.r, super.s, super.v, this.yParity);
 
-  factory EIP7702MsgSignature.forge(BigInt r, BigInt s, int v) =>
-      EIP7702MsgSignature(r, s, v, v > 1 ? v - 27 : v);
+  factory EIP7702MsgSignature.forge(BigInt r, BigInt s, int v) {
+    v = v > 1 ? v : v + 27;
+    return EIP7702MsgSignature(r, s, v, v - 27);
+  }
 }
 
 @freezed
