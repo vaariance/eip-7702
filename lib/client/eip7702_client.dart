@@ -1,12 +1,13 @@
 part of '../eip7702.dart';
 
-class Eip7702Client {
+class Eip7702Client implements Eip7702ClientBase {
   final Eip7702Context ctx;
   final AuthorizationBuilder _authBuilder;
   final SetCodeTxBuilder _txBuilder;
 
   Eip7702Client._(this.ctx, this._authBuilder, this._txBuilder);
 
+  @override
   Future<HexString> delegateAndCall({
     required Signer signer,
     required EthereumAddress to,
@@ -29,6 +30,7 @@ class Eip7702Client {
     return hash;
   }
 
+  @override
   Future<HexString> revokeDelegation({
     required Signer signer,
     Signer? txSigner,
