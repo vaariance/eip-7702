@@ -5,7 +5,7 @@ class Eip7702Client implements Eip7702ClientBase {
   final AuthorizationBuilder _authBuilder;
   final SetCodeTxBuilder _txBuilder;
 
-  Eip7702Client._(this.ctx, this._authBuilder, this._txBuilder);
+  Eip7702Client(this.ctx, this._authBuilder, this._txBuilder);
 
   @override
   Future<HexString> delegateAndCall({
@@ -79,6 +79,6 @@ class Eip7702Client implements Eip7702ClientBase {
             );
     final authBuilder = AuthorizationBuilder(ctx);
     final txBuilder = SetCodeTxBuilder(ctx);
-    return Eip7702Client._(ctx, authBuilder, txBuilder);
+    return Eip7702Client(ctx, authBuilder, txBuilder);
   }
 }

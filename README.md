@@ -120,3 +120,19 @@ try {
   // Handle validation error
 }
 ```
+
+## Test
+
+```sh
+# run all tests
+dart test tests
+
+# run e2e test
+dart test tests/e2e
+
+# simulate a real testnet set_code_tx
+export RPC_URL = "...lfg"
+export PRIVATE_KEY_WITH_FUNDS = "...0x-i-have-some-testnet-eth"
+dart test tests/__simulation__
+# then follow up on the logs
+```

@@ -26,6 +26,17 @@ class EIP7702MsgSignature extends MsgSignature {
     v = v > 1 ? v : v + 27;
     return EIP7702MsgSignature(r, s, v, v - 27);
   }
+
+  factory EIP7702MsgSignature.fromUint8List(Uint8List data) {
+    if (data.length != 65) {
+      throw ArgumentError.value(data, 'data', 'Must be 65 bytes long');
+    }
+    return EIP7702MsgSignature.forge(
+      bytesToUnsignedInt(data.sublist(0, 32)),
+      bytesToUnsignedInt(data.sublist(32, 64)),
+      data[64],
+    );
+  }
 }
 
 /// Represents a signing source used to produce ECDSA signatures for

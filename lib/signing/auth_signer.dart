@@ -18,7 +18,9 @@ const int _kEip7702AuthPrefix = 0x05;
 Uint8List createAuthPreImage(UnsignedAuthorization auth) {
   final encodedAuth = LengthTrackingByteSink();
   encodedAuth.addByte(_kEip7702AuthPrefix);
-  encodedAuth.add(rlp.encode([auth.chainId, auth.delegateAddress, auth.nonce]));
+  encodedAuth.add(
+    rlp.encode([auth.chainId, auth.delegateAddress.value, auth.nonce]),
+  );
   encodedAuth.close();
   return encodedAuth.asBytes();
 }
