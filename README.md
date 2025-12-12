@@ -21,6 +21,7 @@ final txHash = await client.delegateAndCall(
   signer: signer,
   to: someDappContract,
   data: myCalldata,
+  // optional: txSigner if the tx signer is decoupled from auth signer
 );
 ```
 
@@ -42,12 +43,14 @@ For applications that want more granular control, you can use each builder direc
 final ctx = await Eip7702Context.forge(
   rpcUrl: rpc,
   delegateAddress: myImpl,
+  // transformer = (gasLimit) => gasLimt // for granular control over gas 
 );
 
 final authBuilder = AuthorizationBuilder(ctx);
 
 final unsignedAuth = await authBuilder.buildUnsigned(
   eoa: signer.ethPrivateKey.address,
+  executor: Executor.self // since the auth signer will be the tx sender
 );
 
 final auth = signAuthorization(signer, unsignedAuth);
@@ -96,6 +99,7 @@ This package includes utilities for embedding EIP-7702 authorization data inside
 ```dart
 final auth = await authBuilder.buildAndSign(
   signer: signer
+  executor: Executor.relayer // userop won't be executed by self
 );
 
 // Insert auth into UserOp
@@ -130,7 +134,7 @@ dart test tests
 # run e2e test
 dart test tests/e2e
 
-# simulate a real testnet set_code_tx
+# simulate a real testnet set_code_tx and revocation
 export RPC_URL = "...lfg_but_sepolia" # optional
 export PKEY = "...0x-i-have-0.0001-testnet-eth-min" 
 dart --define=PKEY=$PKEY test test/__simulation__/ --chain-stack-traces

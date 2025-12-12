@@ -50,7 +50,10 @@ void main() {
         final authTuple = (auth: unsignedAuth, signature: dummySignatureObj);
 
         when(
-          () => authBuilder.buildAndSignIfNeeded(signer: signer),
+          () => authBuilder.buildAndSignIfNeeded(
+            signer: signer,
+            executor: any(named: "executor"),
+          ),
         ).thenAnswer((_) async => authTuple);
 
         List<AuthorizationTuple>? capturedAuthList;
@@ -81,7 +84,10 @@ void main() {
         expect(result, equals('0xabcdef'));
 
         verify(
-          () => authBuilder.buildAndSignIfNeeded(signer: signer),
+          () => authBuilder.buildAndSignIfNeeded(
+            signer: signer,
+            executor: any(named: "executor"),
+          ),
         ).called(1);
 
         expect(capturedAuthList, isNotNull);
@@ -103,7 +109,10 @@ void main() {
       'skips authorization when already delegated (auth null from builder)',
       () async {
         when(
-          () => authBuilder.buildAndSignIfNeeded(signer: signer),
+          () => authBuilder.buildAndSignIfNeeded(
+            signer: signer,
+            executor: any(named: "executor"),
+          ),
         ).thenAnswer((_) async => null);
 
         List<AuthorizationTuple>? capturedAuthList;
@@ -135,7 +144,10 @@ void main() {
         expect(result, equals('0x123456'));
 
         verify(
-          () => authBuilder.buildAndSignIfNeeded(signer: signer),
+          () => authBuilder.buildAndSignIfNeeded(
+            signer: signer,
+            executor: any(named: "executor"),
+          ),
         ).called(1);
 
         expect(capturedAuthList, isNotNull);
@@ -205,6 +217,7 @@ void main() {
         when(
           () => authBuilder.buildUnsigned(
             eoa: eoa,
+            executor: any(named: "executor"),
             delegateOverride: any(named: 'delegateOverride'),
             nonceOverride: any(named: 'nonceOverride'),
           ),

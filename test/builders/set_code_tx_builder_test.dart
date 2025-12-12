@@ -108,7 +108,7 @@ void main() {
 
       expect(unsignedTx.from, equals(sender));
       expect(unsignedTx.to, equals(to));
-      expect(unsignedTx.gasLimit, equals(testGas.getInWei));
+      expect(unsignedTx.gasLimit, equals(testGas.getInWei + baseAuthCost));
       expect(unsignedTx.nonce, equals(customNonce.toInt()));
       expect(unsignedTx.authorizationList.length, equals(1));
       expect(unsignedTx.authorizationList.first.auth.chainId, equals(chainId));

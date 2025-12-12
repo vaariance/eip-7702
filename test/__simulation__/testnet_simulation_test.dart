@@ -49,7 +49,7 @@ void main() {
   if (privateKeyHex.isEmpty) {
     print(
       '[EIP-7702 SIM] Skipping: PKEY env var not set. '
-      'Set it and re-run: --define=PKEY="0x..."',
+      'Set it and re-run with: --define=PKEY=\$PKEY',
     );
     return;
   }
