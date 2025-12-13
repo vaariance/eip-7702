@@ -31,4 +31,13 @@ jobs:
         run: dart test
 
       - name: Publish to pub.dev
-        run: dart pub publish --force
+        run: |
+          output=$(dart pub publish --force 2>&1) || {
+            if echo "$output" | grep -q "Version" && echo "$output" | grep -q "already" && echo "$output" | grep -q "exists"; then
+              echo "Version already published; skipping."
+              exit 0
+            else
+              echo "$output"
+              exit $?
+            fi
+          }
