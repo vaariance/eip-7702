@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/vaariance/eip-7702/compare/v1.0.0...v1.0.1) (2025-12-13)
+
+
+### Bug Fixes
+
+* improve package score on pub.dev ([a3985b8](https://github.com/vaariance/eip-7702/commit/a3985b8dda8a0a9cf1cc5d159117e957335ffdbf))
+
 ## 1.0.0 (2025-12-13)
 
 ### Features
