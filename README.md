@@ -1,5 +1,7 @@
 # EIP-7702 Library for flutter apps
 
+[![Coverage Status](https://coveralls.io/repos/github/vaariance/eip-7702/badge.svg?branch=main)](https://coveralls.io/github/vaariance/eip-7702?branch=main)
+
 A lightweight, modern implementation of EIP-7702 typed transactions (0x04), including authorization generation, transaction building, signing, and optional ERC-4337 compatibility helpers. Built with [web3dart](https://pub.dev/packages/web3dart).
 
 The package is designed for wallets, account-abstraction layers, smart-account frameworks, and dApp-embedded signing experiences, where full control of signing, auth generation, and transaction serialization is required.

@@ -1,0 +1,31 @@
+name: Coveralls
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Activate coverage package
+        run: dart pub global activate coverage
+
+      - name: Run tests & generate LCOV
+        run: dart pub global run coverage:test_with_coverage
+
+      - name: Report to Coveralls
+        uses: coverallsapp/github-action@v2
