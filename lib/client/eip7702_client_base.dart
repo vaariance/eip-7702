@@ -1,5 +1,6 @@
 part of '../eip7702.dart';
 
+/// {@template Eip7702ClientBase}
 /// Defines the high-level client interface for performing EIP-7702
 /// delegation operations, including setting a delegation and revoking it.
 ///
@@ -9,6 +10,7 @@ part of '../eip7702.dart';
 ///  - signing using a [Signer] or optional transaction signer,
 ///  - serializing the resulting transaction into a raw hex string
 ///    suitable for `eth_sendRawTransaction`.
+/// {@endtemplate}
 ///
 /// This abstraction allows applications to interact with EIP-7702
 /// functionality through a simple, opinionated API without needing to

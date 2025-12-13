@@ -1,5 +1,11 @@
 part of '../../builder.dart';
 
+/// Function signature for transforming an estimated gas value.
+///
+/// A [GasTransformFn] takes the original gas estimate (as a [BigInt]) and
+/// returns a modified value that will be used when building transactions.
+/// This is useful for applying multipliers, adding buffers, or capping
+/// the gas limit before submission.
 typedef GasTransformFn = BigInt Function(BigInt);
 
 /// Holds the shared configuration and network environment used by all

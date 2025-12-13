@@ -1,5 +1,10 @@
 part of '../eip7702.dart';
 
+/// A single entry in an EIP-2930 access list.
+///
+/// The tuple contains:
+/// - [address] – the 20-byte address of the contract whose storage is being accessed.
+/// - [storageKeys] – a list of 32-byte storage slot keys that are expected to be touched.
 typedef AccessListItem = ({Uint8List address, List<Uint8List> storageKeys});
 
 /// Represents a fully signed EIP-7702 transaction, pairing the unsigned

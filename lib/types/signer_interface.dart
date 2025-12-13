@@ -86,7 +86,12 @@ class Signer with _$Signer {
   const factory Signer.raw(Uint8List rawPrivateKey) = RawSigner;
 }
 
+/// A custom signer that implements the [Signer] interface.
+///
+/// This abstract class allows external implementations to plug in their own
+/// signing logic while still exposing the required [EthPrivateKey] getter.
 abstract class CustomSigner implements Signer {
+  /// The underlying [EthPrivateKey] used for signing operations.
   EthPrivateKey get ethPrivateKey;
 
   /// {@macro sign}
@@ -96,7 +101,14 @@ abstract class CustomSigner implements Signer {
   Future<EIP7702MsgSignature> signAsync(Uint8List preImage);
 }
 
+/// Extension providing convenient access to the underlying [EthPrivateKey]
+/// for any [Signer] instance, regardless of its concrete type ([EthSigner]
+/// or [RawSigner]).
 extension SignerX on Signer {
+  /// Returns the [EthPrivateKey] associated with this signer.
+  ///
+  /// For [Signer.eth], it simply unwraps the stored key; for [Signer.raw],
+  /// it constructs a new [EthPrivateKey] from the raw 32-byte private key.
   EthPrivateKey get ethPrivateKey =>
       when(raw: (value) => EthPrivateKey(value), eth: (value) => value);
 

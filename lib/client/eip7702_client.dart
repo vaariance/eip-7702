@@ -1,5 +1,6 @@
 part of '../eip7702.dart';
 
+/// {@macro Eip7702ClientBase}
 class Eip7702Client implements Eip7702ClientBase {
   final Eip7702Context ctx;
   final AuthorizationBuilder _authBuilder;

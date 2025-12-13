@@ -1,5 +1,10 @@
 part of '../builder.dart';
 
+/// Gas cost charged per authorization tuple in an EIP-7702 `setCode` transaction.
+///
+/// Each authorization adds a fixed 25,000 gas to the transaction’s intrinsic cost.
+/// This value is defined by the EIP-7702 specification and is multiplied by the
+/// number of entries in the `authorizationList` when computing the total gas limit.
 final BigInt baseAuthCost = BigInt.from(25000);
 
 /// A builder responsible for constructing type `0x04` EIP-7702
