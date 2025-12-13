@@ -32,7 +32,7 @@ void main() {
 
   if (rpcUrl.isEmpty) {
     print(
-      '[EIP-7702 SIM] Skipping: RPC_URL env var not set. '
+      '[EIP-7702 SIM] Skipping simulation: rpcUrl env var not set. '
       'Set it and re-run: --define=RPC_URL="https://rpc.testnet.lfg"',
     );
     return;
@@ -40,7 +40,7 @@ void main() {
 
   if (delegateHex.isEmpty) {
     print(
-      '[EIP-7702 SIM] Skipping: IMPL env var not set. '
+      '[EIP-7702 SIM] Skipping simulation: delegate-address env var not set. '
       'Set it and re-run: --define=IMPL="0xYourImplementation"',
     );
     return;
@@ -48,7 +48,7 @@ void main() {
 
   if (privateKeyHex.isEmpty) {
     print(
-      '[EIP-7702 SIM] Skipping: PKEY env var not set. '
+      '[EIP-7702 SIM] Skipping simulation: private-key env var not set. '
       'Set it and re-run with: --define=PKEY=\$PKEY',
     );
     return;

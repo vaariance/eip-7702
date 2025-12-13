@@ -131,12 +131,9 @@ try {
 # run all tests
 dart test tests
 
-# run e2e test
-dart test tests/e2e
-
 # simulate a real testnet set_code_tx and revocation
 export RPC_URL = "...lfg_but_sepolia" # optional
-export PKEY = "...0x-i-have-0.0001-testnet-eth-min" 
+export PKEY = "...0x-i-have-0.0001-testnet-eth-min" # private-key
 dart --define=PKEY=$PKEY test test/__simulation__/ --chain-stack-traces
 # then follow up on the logs
 ```

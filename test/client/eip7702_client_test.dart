@@ -287,4 +287,79 @@ void main() {
       },
     );
   });
+
+  group('Eip7702Client (composition)', () {
+    test(
+      'delegateAndCall first time: builds auth + builds tx and sends typed 0x04',
+      () async {
+        final web3 = MockWeb3Client();
+
+        final client = await Eip7702Client.create(
+          rpcUrl:
+              'http://localhost:8545', // unused because customClient provided
+          delegateAddress: implAddress,
+          customClient: web3,
+        );
+
+        final signer = Signer.eth(ethKey);
+        final eoa = signer.ethPrivateKey.address;
+
+        when(() => web3.getCode(eoa)).thenAnswer((_) async => Uint8List(0));
+
+        when(() => web3.getChainId()).thenAnswer((_) async => chainId);
+
+        when(
+          () =>
+              web3.getTransactionCount(eoa, atBlock: const BlockNum.pending()),
+        ).thenAnswer((_) async => customNonce.toInt());
+
+        when(
+          () => web3.getGasInEIP1559(),
+        ).thenAnswer((_) async => [slow, normal, fast]);
+
+        // 5) Gas estimation (make this loose; verify separately if you want strict)
+        when(
+          () => web3.estimateGas(
+            sender: any(named: 'sender'),
+            to: any(named: 'to'),
+            data: any(named: 'data'),
+            value: any(named: 'value'),
+            maxPriorityFeePerGas: any(named: 'maxPriorityFeePerGas'),
+            maxFeePerGas: any(named: 'maxFeePerGas'),
+          ),
+        ).thenAnswer((_) async => BigInt.from(21000));
+
+        // 6) Capture raw tx
+        String? capturedRaw;
+        when(
+          () => web3.makeRPCCall('eth_sendRawTransaction', any()),
+        ).thenAnswer((invocation) async {
+          final params = invocation.positionalArguments[1] as List<dynamic>;
+          capturedRaw = params.first as String;
+          return '0xabcdef';
+        });
+
+        // Act
+        final hash = await client.delegateAndCall(
+          signer: signer,
+          to: nftAddress,
+          data: calldata,
+        );
+
+        // Assert
+        expect(hash, equals('0xabcdef'));
+        expect(capturedRaw, isNotNull);
+        expect(capturedRaw!.startsWith('0x'), isTrue);
+
+        final rawBytes = hexToBytes(capturedRaw!);
+        expect(rawBytes.isNotEmpty, isTrue);
+
+        expect(rawBytes.first, equals(TransactionType.eip7702.value));
+
+        verify(
+          () => web3.makeRPCCall('eth_sendRawTransaction', any()),
+        ).called(1);
+      },
+    );
+  });
 }
