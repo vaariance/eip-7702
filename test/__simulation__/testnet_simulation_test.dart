@@ -25,7 +25,7 @@ void main() {
     'RPC_URL',
     defaultValue: "https://0xrpc.io/sep",
   );
-  final delegateHex = String.fromEnvironment(
+  final delegateAddress = String.fromEnvironment(
     'IMPL',
     defaultValue: "0x0eacC2307f0113F26840dD1dAc8DC586259994Dd",
   );
@@ -38,7 +38,7 @@ void main() {
     return;
   }
 
-  if (delegateHex.isEmpty) {
+  if (delegateAddress.isEmpty) {
     print(
       '[EIP-7702 SIM] Skipping simulation: delegate-address env var not set. '
       'Set it and re-run: --define=IMPL="0xYourImplementation"',
@@ -55,7 +55,7 @@ void main() {
   }
 
   print('[EIP-7702 SIM] RPC_URL              : $rpcUrl');
-  print('[EIP-7702 SIM] DELEGATE_ADDRESS     : $delegateHex');
+  print('[EIP-7702 SIM] DELEGATE_ADDRESS     : $delegateAddress');
   print('[EIP-7702 SIM] PRIVATE_KEY_WITH_FUNDS: **** (hidden)');
 
   test('simulate real testnet set_code_tx via Eip7702Client', () async {
@@ -69,9 +69,7 @@ void main() {
 
     print('[EIP-7702 SIM] Using sender : ${ethKey.address.eip55With0x}');
 
-    final delegateAddress = EthereumAddress.fromHex(delegateHex);
-
-    final ctx = await Eip7702Context.forge(
+    final ctx = create7702Context(
       rpcUrl: rpcUrl,
       delegateAddress: delegateAddress,
       transformer: (gasLimit) => gasLimit * BigInt.from(5),
@@ -105,7 +103,7 @@ void main() {
 
     if (alreadyDelegating) {
       print(
-        '[EIP-7702 SIM] Existing Delegation to ${delegateAddress.eip55With0x} detected. '
+        '[EIP-7702 SIM] Existing Delegation to $delegateAddress detected. '
         'switching to default EIP1559 transaction type',
       );
     }
@@ -115,7 +113,7 @@ void main() {
     try {
       txHash = await eip7702Client.delegateAndCall(
         signer: signer,
-        to: ethKey.address,
+        to: ethKey.address.eip55With0x,
         data: calldata,
       );
     } catch (e, st) {
@@ -146,9 +144,7 @@ void main() {
 
     print('[EIP-7702 SIM] Using sender : ${ethKey.address.eip55With0x}');
 
-    final delegateAddress = EthereumAddress.fromHex(delegateHex);
-
-    final ctx = await Eip7702Context.forge(
+    final ctx = create7702Context(
       rpcUrl: rpcUrl,
       delegateAddress: delegateAddress,
     );

@@ -20,7 +20,11 @@ void main() {
 
       final payload = preImage.sublist(1);
 
-      final expectedRlp = rlp.encode([chainId, implAddress.value, customNonce]);
+      final expectedRlp = rlp.encode([
+        chainId,
+        implAddress.ethAddress.value,
+        customNonce,
+      ]);
 
       expect(payload, equals(expectedRlp));
     });

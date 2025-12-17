@@ -20,7 +20,10 @@ void main() {
 
   setUp(() {
     web3 = MockWeb3Client();
-    ctx = Eip7702Context(delegateAddress: implAddress, web3Client: web3);
+    ctx = Eip7702Context(
+      delegateAddress: implAddress.ethAddress,
+      web3Client: web3,
+    );
     builder = AuthorizationBuilder(ctx);
     signer = Signer.eth(ethKey);
   });
@@ -42,13 +45,11 @@ void main() {
 
         expect(unsigned.chainId, equals(chainId));
         expect(unsigned.nonce, equals(customNonce));
-        expect(unsigned.delegateAddress, equals(ctx.delegateAddress));
+        expect(unsigned.delegateAddress, equals(ctx.delegateAddress.with0x));
       },
     );
 
     test('respects delegateOverride when provided', () async {
-      final overrideDelegate = EthereumAddress(Uint8List(20));
-
       when(() => web3.getChainId()).thenAnswer((_) async => chainId);
       when(
         () =>
@@ -57,12 +58,12 @@ void main() {
 
       final unsigned = await builder.buildUnsigned(
         eoa: eoa(),
-        delegateOverride: overrideDelegate,
+        delegateOverride: zeroAddress,
       );
 
       expect(unsigned.chainId, equals(chainId));
       expect(unsigned.nonce, equals(customNonce));
-      expect(unsigned.delegateAddress, equals(overrideDelegate));
+      expect(unsigned.delegateAddress, equals(zeroAddress));
     });
 
     test(
@@ -104,7 +105,7 @@ void main() {
         final tuple = await builder.buildAndSign(signer: signer);
 
         expect(tuple.auth.chainId, equals(chainId));
-        expect(tuple.auth.delegateAddress, equals(ctx.delegateAddress));
+        expect(tuple.auth.delegateAddress, equals(ctx.delegateAddress.with0x));
         expect(tuple.auth.nonce, equals(customNonce));
 
         final preImage = createAuthPreImage(tuple.auth);

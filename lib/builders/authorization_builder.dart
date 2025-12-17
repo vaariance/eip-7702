@@ -139,12 +139,12 @@ class AuthorizationBuilder extends Eip7702Base with Eip7702Common {
   Future<UnsignedAuthorization> buildUnsigned({
     required EthereumAddress eoa,
     Executor? executor,
-    EthereumAddress? delegateOverride,
+    HexString? delegateOverride,
     BigInt? nonceOverride,
   }) async {
     final resolvedChainId = await resolveChainId();
     final resolvedNonce = await resolveNonce(eoa, executor, nonceOverride);
-    final delegateAddress = delegateOverride ?? ctx.delegateAddress;
+    final delegateAddress = delegateOverride ?? ctx.delegateAddress.with0x;
     return (
       chainId: resolvedChainId,
       delegateAddress: delegateAddress,

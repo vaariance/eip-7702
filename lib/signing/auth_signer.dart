@@ -19,7 +19,11 @@ Uint8List createAuthPreImage(UnsignedAuthorization auth) {
   final encodedAuth = LengthTrackingByteSink();
   encodedAuth.addByte(_kEip7702AuthPrefix);
   encodedAuth.add(
-    rlp.encode([auth.chainId, auth.delegateAddress.value, auth.nonce]),
+    rlp.encode([
+      auth.chainId,
+      auth.delegateAddress.ethAddress.value,
+      auth.nonce,
+    ]),
   );
   encodedAuth.close();
   return encodedAuth.asBytes();

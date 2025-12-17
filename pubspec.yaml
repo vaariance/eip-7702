@@ -21,6 +21,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   test: ^1.28.0
   eip1559: ^0.6.2
+  lints: ^6.0.0
 
 topics:
   - wallets

@@ -26,7 +26,7 @@ part of '../eip7702.dart';
 List<dynamic> encodeAuthorizationTupleToRlp(AuthorizationTuple auth) {
   final list = [
     auth.auth.chainId,
-    auth.auth.delegateAddress.value,
+    auth.auth.delegateAddress.ethAddress.value,
     auth.auth.nonce,
     auth.signature.yParity,
     auth.signature.r,

@@ -16,26 +16,29 @@ void main() {
 
   setUp(() {
     web3 = MockWeb3Client();
-    context = Eip7702Context(delegateAddress: implAddress, web3Client: web3);
+    context = Eip7702Context(
+      delegateAddress: implAddress.ethAddress,
+      web3Client: web3,
+    );
     common = TestCommon(context);
   });
 
   group('getDelegatedImpl', () {
     test('returns null when code is empty', () async {
       when(
-        () => web3.getCode(defaultSender),
+        () => web3.getCode(defaultSender.ethAddress),
       ).thenAnswer((_) async => Uint8List(0));
 
-      final impl = await common.getDelegatedImpl(defaultSender);
+      final impl = await common.getDelegatedImpl(defaultSender.ethAddress);
       expect(impl, isNull);
     });
 
     test('returns null when code length is not 23 bytes', () async {
       when(
-        () => web3.getCode(defaultSender),
+        () => web3.getCode(defaultSender.ethAddress),
       ).thenAnswer((_) async => Uint8List.fromList([0xEF, 0x01])); // too short
 
-      final impl = await common.getDelegatedImpl(defaultSender);
+      final impl = await common.getDelegatedImpl(defaultSender.ethAddress);
       expect(impl, isNull);
     });
 
@@ -43,9 +46,11 @@ void main() {
       final bytes = Uint8List(23);
       bytes.setAll(0, [0x00, 0x01, 0x00]); // wrong prefix
 
-      when(() => web3.getCode(defaultSender)).thenAnswer((_) async => bytes);
+      when(
+        () => web3.getCode(defaultSender.ethAddress),
+      ).thenAnswer((_) async => bytes);
 
-      final impl = await common.getDelegatedImpl(defaultSender);
+      final impl = await common.getDelegatedImpl(defaultSender.ethAddress);
       expect(impl, isNull);
     });
 
@@ -57,15 +62,17 @@ void main() {
           0xEF,
           0x01,
           0x00,
-          ...implAddress.value,
+          ...implAddress.ethAddress.value,
         ]);
 
-        when(() => web3.getCode(defaultSender)).thenAnswer((_) async => code);
+        when(
+          () => web3.getCode(defaultSender.ethAddress),
+        ).thenAnswer((_) async => code);
 
-        final impl = await common.getDelegatedImpl(defaultSender);
+        final impl = await common.getDelegatedImpl(defaultSender.ethAddress);
         expect(impl, isNotNull);
         expect(impl!.length, equals(20));
-        expect(impl, equals(implAddress.value));
+        expect(impl, equals(implAddress.ethAddress.value));
       },
     );
   });
@@ -73,19 +80,32 @@ void main() {
   group('isDelegatedTo', () {
     test('returns false when getDelegatedImpl returns null', () async {
       when(
-        () => web3.getCode(defaultSender),
+        () => web3.getCode(defaultSender.ethAddress),
       ).thenAnswer((_) async => Uint8List(0));
 
-      final result = await common.isDelegatedTo(defaultSender, implAddress);
+      final result = await common.isDelegatedTo(
+        defaultSender.ethAddress,
+        implAddress.ethAddress,
+      );
       expect(result, isFalse);
     });
 
     test('returns true when current impl matches expected impl', () async {
-      final code = Uint8List.fromList([0xEF, 0x01, 0x00, ...implAddress.value]);
+      final code = Uint8List.fromList([
+        0xEF,
+        0x01,
+        0x00,
+        ...implAddress.ethAddress.value,
+      ]);
 
-      when(() => web3.getCode(defaultSender)).thenAnswer((_) async => code);
+      when(
+        () => web3.getCode(defaultSender.ethAddress),
+      ).thenAnswer((_) async => code);
 
-      final result = await common.isDelegatedTo(defaultSender, implAddress);
+      final result = await common.isDelegatedTo(
+        defaultSender.ethAddress,
+        implAddress.ethAddress,
+      );
       expect(result, isTrue);
     });
 
@@ -94,9 +114,14 @@ void main() {
       () async {
         final code = Uint8List.fromList([0xEF, 0x01, 0x00, ...Uint8List(32)]);
 
-        when(() => web3.getCode(defaultSender)).thenAnswer((_) async => code);
+        when(
+          () => web3.getCode(defaultSender.ethAddress),
+        ).thenAnswer((_) async => code);
 
-        final result = await common.isDelegatedTo(defaultSender, implAddress);
+        final result = await common.isDelegatedTo(
+          defaultSender.ethAddress,
+          implAddress.ethAddress,
+        );
         expect(result, isFalse);
       },
     );
@@ -142,12 +167,12 @@ void main() {
       () async {
         when(
           () => web3.getTransactionCount(
-            defaultSender,
+            defaultSender.ethAddress,
             atBlock: const BlockNum.pending(),
           ),
         ).thenAnswer((_) async => 5);
 
-        final nonce = await common.getNonce(defaultSender);
+        final nonce = await common.getNonce(defaultSender.ethAddress);
         expect(nonce, equals(BigInt.from(5)));
       },
     );
@@ -178,6 +203,50 @@ void main() {
         verifyNever(() => web3.getChainId());
       },
     );
+  });
+
+  group('create7702Context', () {
+    test('creates context with converted delegate address and Web3Client', () {
+      final ctx = create7702Context(
+        rpcUrl: 'https://rpc.example.com',
+        delegateAddress: implAddress,
+      );
+
+      expect(ctx.delegateAddress, equals(implAddress.ethAddress));
+      expect(ctx.web3Client, isNotNull);
+      expect(ctx.transformer, isNull);
+      expect(ctx.chainId, isNull);
+    });
+
+    test('creates context with transformer when provided', () {
+      BigInt transformer(BigInt gas) => gas * BigInt.from(12) ~/ BigInt.from(10);
+      final ctx = create7702Context(
+        rpcUrl: 'https://rpc.example.com',
+        delegateAddress: implAddress,
+        transformer: transformer,
+      );
+
+      expect(ctx.delegateAddress, equals(implAddress.ethAddress));
+      expect(ctx.web3Client, isNotNull);
+      expect(ctx.transformer, equals(transformer));
+
+      // Test transformer functionality
+      final testGas = BigInt.from(100);
+      final transformedGas = ctx.transformer!(testGas);
+      expect(transformedGas, equals(BigInt.from(120)));
+    });
+
+    test('transformer correctly modifies gas estimates', () {
+      BigInt transformer(BigInt gas) => gas + BigInt.from(10000);
+      final ctx = create7702Context(
+        rpcUrl: 'https://rpc.example.com',
+        delegateAddress: implAddress,
+        transformer: transformer,
+      );
+
+      final result = ctx.transformer!(BigInt.from(50000));
+      expect(result, equals(BigInt.from(60000)));
+    });
   });
 }
 

@@ -77,13 +77,13 @@ class SetCodeTxBuilder extends Eip7702Base with Eip7702Common {
   /// ```
   Future<HexString> buildSignAndEncodeRaw({
     required Signer signer,
-    required EthereumAddress to,
-    EtherAmount? value,
+    required HexString to,
+    BigInt? value,
     Uint8List? data,
     List<AuthorizationTuple> authorizationList = const [],
   }) async {
     final unsignedTx = await buildUnsigned(
-      sender: signer.ethPrivateKey.address,
+      sender: signer.ethPrivateKey.address.eip55With0x,
       to: to,
       value: value,
       data: data,
@@ -130,9 +130,9 @@ class SetCodeTxBuilder extends Eip7702Base with Eip7702Common {
   /// );
   /// ```
   Future<Unsigned7702Tx> buildUnsigned({
-    required EthereumAddress sender,
-    required EthereumAddress to,
-    EtherAmount? value,
+    required HexString sender,
+    required HexString to,
+    BigInt? value,
     Uint8List? data,
     List<AuthorizationTuple> authorizationList = const [],
     BigInt? nonceOverride,
@@ -171,25 +171,27 @@ class SetCodeTxBuilder extends Eip7702Base with Eip7702Common {
   /// final prepare = await builder.prepareUnsigned(sender, to);
   /// final unsigned = await prepare(EtherAmount.zero(), callData);
   /// ```
-  Future<Future<Unsigned7702Tx> Function(EtherAmount?, Uint8List?, int)>
+  Future<Future<Unsigned7702Tx> Function(BigInt?, Uint8List?, int)>
   prepareUnsigned(
-    EthereumAddress sender,
-    EthereumAddress to, [
+    HexString sender,
+    HexString to, [
     BigInt? nonceOverride,
   ]) async {
     final [nonce, fees] = await Future.wait<dynamic>([
-      resolveNonce(sender, null, nonceOverride),
+      resolveNonce(sender.ethAddress, null, nonceOverride),
       getFeeData(),
     ]);
     final maxFeePerGas = EtherAmount.inWei(fees.maxFeePerGas);
     final maxPriorityFeePerGas = EtherAmount.inWei(fees.maxPriorityFeePerGas);
 
-    return (EtherAmount? value, Uint8List? data, int noOfAuths) async {
+    return (BigInt? value, Uint8List? data, int noOfAuths) async {
+      final valueEtherAmount = EtherAmount.inWei(value ?? BigInt.zero);
+
       final gasLimit = await ctx.web3Client.estimateGas(
-        sender: sender,
-        to: to,
+        sender: sender.ethAddress,
+        to: to.ethAddress,
         data: data,
-        value: value,
+        value: valueEtherAmount,
         maxPriorityFeePerGas: maxPriorityFeePerGas,
         maxFeePerGas: maxFeePerGas,
       );
@@ -198,11 +200,11 @@ class SetCodeTxBuilder extends Eip7702Base with Eip7702Common {
       final totalGas = gasLimit + baseCost;
 
       return Unsigned7702Tx(
-        from: sender,
-        to: to,
+        from: sender.ethAddress,
+        to: to.ethAddress,
         gasLimit: ctx.transformer?.call(totalGas) ?? totalGas,
         nonce: nonce.toInt(),
-        value: value ?? EtherAmount.zero(),
+        value: valueEtherAmount,
         data: data ?? Uint8List(0),
         maxFeePerGas: maxFeePerGas,
         maxPriorityFeePerGas: maxPriorityFeePerGas,

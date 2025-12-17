@@ -7,11 +7,11 @@ import '../__test_utils__/fixtures.dart';
 void main() {
   group('createTxPreImage', () {
     final tx = Unsigned7702Tx(
-      from: defaultSender,
-      to: defaultSender,
+      from: defaultSender.ethAddress,
+      to: defaultSender.ethAddress,
       gasLimit: BigInt.from(21000),
       nonce: customNonce.toInt(),
-      value: value,
+      value: valueEtherAmount,
       data: calldata,
       maxFeePerGas: testGas,
       maxPriorityFeePerGas: testGas,

@@ -20,3 +20,4 @@ part 'package:eip7702/types/signer_interface.dart';
 part 'package:eip7702/types/signer_interface.freezed.dart';
 part 'package:eip7702/utils/encoding.dart';
 part 'package:eip7702/utils/enums.dart';
+part 'package:eip7702/utils/address.dart';

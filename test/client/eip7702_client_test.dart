@@ -28,7 +28,10 @@ void main() {
 
   setUp(() {
     web3 = MockWeb3Client();
-    ctx = Eip7702Context(delegateAddress: implAddress, web3Client: web3);
+    ctx = Eip7702Context(
+      delegateAddress: implAddress.ethAddress,
+      web3Client: web3,
+    );
 
     authBuilder = MockAuthorizationBuilder();
     txBuilder = MockSetCodeTxBuilder();
@@ -160,6 +163,119 @@ void main() {
     );
   });
 
+  group('Eip7702Client.call', () {
+    test('builds and sends transaction without authorization', () async {
+      when(
+        () => txBuilder.buildSignAndEncodeRaw(
+          signer: signer,
+          to: nftAddress,
+          data: calldata,
+          value: any(named: 'value'),
+          authorizationList: any(named: 'authorizationList'),
+        ),
+      ).thenAnswer((invocation) async {
+        final authList = invocation.namedArguments[#authorizationList]
+            as List<AuthorizationTuple>;
+        expect(authList, isEmpty);
+        return '0xcallraw';
+      });
+
+      when(
+        () => web3.makeRPCCall('eth_sendRawTransaction', ['0xcallraw']),
+      ).thenAnswer((_) async => '0xcallhash');
+
+      final result = await client.call(
+        txSigner: signer,
+        to: nftAddress,
+        data: calldata,
+      );
+
+      expect(result, equals('0xcallhash'));
+
+      verify(
+        () => txBuilder.buildSignAndEncodeRaw(
+          signer: signer,
+          to: nftAddress,
+          data: calldata,
+          value: any(named: 'value'),
+          authorizationList: any(named: 'authorizationList'),
+        ),
+      ).called(1);
+
+      verify(
+        () => web3.makeRPCCall('eth_sendRawTransaction', ['0xcallraw']),
+      ).called(1);
+
+      // Verify authorization builder was NOT called
+      verifyZeroInteractions(authBuilder);
+    });
+
+    test('sends transaction with value when provided', () async {
+      final value = BigInt.from(1000000000000000000); // 1 ETH
+
+      BigInt? capturedValue;
+      when(
+        () => txBuilder.buildSignAndEncodeRaw(
+          signer: signer,
+          to: nftAddress,
+          data: calldata,
+          value: any(named: 'value'),
+          authorizationList: any(named: 'authorizationList'),
+        ),
+      ).thenAnswer((invocation) async {
+        capturedValue = invocation.namedArguments[#value] as BigInt?;
+        return '0xvalueraw';
+      });
+
+      when(
+        () => web3.makeRPCCall('eth_sendRawTransaction', ['0xvalueraw']),
+      ).thenAnswer((_) async => '0xvaluehash');
+
+      final result = await client.call(
+        txSigner: signer,
+        to: nftAddress,
+        data: calldata,
+        value: value,
+      );
+
+      expect(result, equals('0xvaluehash'));
+      expect(capturedValue, equals(value));
+    });
+
+    test('works with null data for simple value transfers', () async {
+      when(
+        () => txBuilder.buildSignAndEncodeRaw(
+          signer: signer,
+          to: nftAddress,
+          data: null,
+          value: any(named: 'value'),
+          authorizationList: any(named: 'authorizationList'),
+        ),
+      ).thenAnswer((_) async => '0xtransferraw');
+
+      when(
+        () => web3.makeRPCCall('eth_sendRawTransaction', ['0xtransferraw']),
+      ).thenAnswer((_) async => '0xtransferhash');
+
+      final result = await client.call(
+        txSigner: signer,
+        to: nftAddress,
+      );
+
+      expect(result, equals('0xtransferhash'));
+
+      verify(
+        () => txBuilder.buildSignAndEncodeRaw(
+          signer: signer,
+          to: nftAddress,
+          data: null,
+          value: any(named: 'value'),
+          authorizationList: any(named: 'authorizationList'),
+        ),
+      ).called(1);
+    });
+  });
+
   group('Eip7702Client.revokeDelegation', () {
     test(
       'throws AssertionError when EOA is not delegating to delegateAddress',
@@ -167,7 +283,7 @@ void main() {
         final eoa = signer.ethPrivateKey.address;
 
         when(
-          () => authBuilder.isDelegatedTo(eoa, implAddress),
+          () => authBuilder.isDelegatedTo(eoa, implAddress.ethAddress),
         ).thenAnswer((_) async => false);
 
         when(
@@ -179,7 +295,9 @@ void main() {
           throwsA(isA<AssertionError>()),
         );
 
-        verify(() => authBuilder.isDelegatedTo(eoa, implAddress)).called(1);
+        verify(
+          () => authBuilder.isDelegatedTo(eoa, implAddress.ethAddress),
+        ).called(1);
         verifyNever(
           () => authBuilder.buildUnsigned(
             eoa: eoa,
@@ -204,7 +322,7 @@ void main() {
         final eoa = signer.ethPrivateKey.address;
 
         when(
-          () => authBuilder.isDelegatedTo(eoa, implAddress),
+          () => authBuilder.isDelegatedTo(eoa, implAddress.ethAddress),
         ).thenAnswer((_) async => true);
 
         when(
@@ -212,7 +330,7 @@ void main() {
         ).thenAnswer((_) async => chainId);
 
         UnsignedAuthorization? capturedUnsigned;
-        EthereumAddress? capturedDelegateOverride;
+        String? capturedDelegateOverride;
 
         when(
           () => authBuilder.buildUnsigned(
@@ -223,11 +341,11 @@ void main() {
           ),
         ).thenAnswer((invocation) async {
           capturedDelegateOverride =
-              invocation.namedArguments[#delegateOverride] as EthereumAddress;
+              invocation.namedArguments[#delegateOverride];
 
           final unsigned = (
             chainId: chainId,
-            delegateAddress: EthereumAddress(Uint8List(20)),
+            delegateAddress: zeroAddress,
             nonce: customNonce,
           );
           capturedUnsigned = unsigned;
@@ -261,18 +379,23 @@ void main() {
 
         expect(result, equals('0xrevoketxhash'));
 
-        verify(() => authBuilder.isDelegatedTo(eoa, implAddress)).called(1);
+        verify(
+          () => authBuilder.isDelegatedTo(eoa, implAddress.ethAddress),
+        ).called(1);
 
         expect(capturedDelegateOverride, isNotNull);
         expect(
-          bytesToHex(capturedDelegateOverride!.value, include0x: true),
+          capturedDelegateOverride!,
           equals('0x0000000000000000000000000000000000000000'),
         );
 
         expect(capturedUnsigned, isNotNull);
         expect(capturedUnsigned!.chainId, equals(chainId));
         expect(
-          bytesToHex(capturedUnsigned!.delegateAddress.value, include0x: true),
+          bytesToHex(
+            capturedUnsigned!.delegateAddress.ethAddress.value,
+            include0x: true,
+          ),
           equals('0x0000000000000000000000000000000000000000'),
         );
 
@@ -294,7 +417,7 @@ void main() {
       () async {
         final web3 = MockWeb3Client();
 
-        final client = await Eip7702Client.create(
+        final client = create7702Client(
           rpcUrl:
               'http://localhost:8545', // unused because customClient provided
           delegateAddress: implAddress,
@@ -361,5 +484,80 @@ void main() {
         ).called(1);
       },
     );
+  });
+
+  group('create7702Client', () {
+    test('creates client with managed Web3Client when customClient is null', () {
+      final client = create7702Client(
+        rpcUrl: 'https://rpc.example.com',
+        delegateAddress: implAddress,
+      );
+
+      expect(client, isA<Eip7702Client>());
+      expect(client.ctx.delegateAddress, equals(implAddress.ethAddress));
+      expect(client.ctx.web3Client, isNotNull);
+      expect(client.ctx.transformer, isNull);
+      expect(client.ctx.chainId, isNull);
+    });
+
+    test('creates client with transformer in managed mode', () {
+      BigInt transformer(BigInt gas) => gas * BigInt.from(15) ~/ BigInt.from(10);
+
+      final client = create7702Client(
+        rpcUrl: 'https://rpc.example.com',
+        delegateAddress: implAddress,
+        transformer: transformer,
+      );
+
+      expect(client, isA<Eip7702Client>());
+      expect(client.ctx.transformer, isNotNull);
+
+      // Test transformer functionality
+      final result = client.ctx.transformer!(BigInt.from(100));
+      expect(result, equals(BigInt.from(150)));
+    });
+
+    test('creates client with custom Web3Client when provided', () {
+      final customWeb3 = MockWeb3Client();
+      final client = create7702Client(
+        rpcUrl: 'https://ignored.example.com', // should be ignored
+        delegateAddress: implAddress,
+        customClient: customWeb3,
+      );
+
+      expect(client, isA<Eip7702Client>());
+      expect(client.ctx.delegateAddress, equals(implAddress.ethAddress));
+      expect(client.ctx.web3Client, equals(customWeb3));
+      expect(client.ctx.transformer, isNull);
+    });
+
+    test('applies transformer even with custom Web3Client', () {
+      BigInt transformer(BigInt gas) => gas + BigInt.from(5000);
+
+      final customWeb3 = MockWeb3Client();
+      final client = create7702Client(
+        rpcUrl: 'https://ignored.example.com',
+        delegateAddress: implAddress,
+        customClient: customWeb3,
+        transformer: transformer,
+      );
+
+      expect(client.ctx.web3Client, equals(customWeb3));
+      expect(client.ctx.transformer, isNotNull);
+
+      final result = client.ctx.transformer!(BigInt.from(20000));
+      expect(result, equals(BigInt.from(25000)));
+    });
+
+    test('client has properly initialized builders', () {
+      final client = create7702Client(
+        rpcUrl: 'https://rpc.example.com',
+        delegateAddress: implAddress,
+      );
+
+      // Verify the client is fully initialized and functional
+      expect(client, isA<Eip7702Client>());
+      expect(client, isA<Eip7702ClientBase>());
+    });
   });
 }

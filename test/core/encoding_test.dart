@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:eip7702/eip7702.dart';
 import 'package:test/test.dart';
-import 'package:wallet/wallet.dart';
 
 import '../__test_utils__/fixtures.dart';
 
@@ -20,7 +17,7 @@ void main() {
 
       expect(encoded.length, equals(6));
       expect(encoded[0], equals(chainId));
-      expect(encoded[1], equals(implAddress.value));
+      expect(encoded[1], equals(implAddress.ethAddress.value));
       expect(encoded[2], equals(customNonce));
       expect(encoded[3], equals(dummySignatureObj.yParity));
       expect(encoded[4], equals(dummySignatureObj.r));
@@ -35,10 +32,10 @@ void main() {
         delegateAddress: implAddress,
         nonce: customNonce,
       );
-      final delegate2 = EthereumAddress(Uint8List(20));
+
       final auth2 = (
         chainId: chainId,
-        delegateAddress: delegate2,
+        delegateAddress: zeroAddress,
         nonce: BigInt.from(2),
       );
 
@@ -56,23 +53,23 @@ void main() {
 
       final first = encodedList[0];
       expect(first[0], equals(chainId));
-      expect(first[1], equals(implAddress.value));
+      expect(first[1], equals(implAddress.ethAddress.value));
       expect(first[2], equals(customNonce));
 
       final second = encodedList[1];
       expect(second[0], equals(chainId));
-      expect(second[1], equals(delegate2.value));
+      expect(second[1], equals(zeroAddress.ethAddress.value));
       expect(second[2], equals(BigInt.from(2)));
     });
   });
 
   group('encodeEIP1559ToRlp', () {
     final tx = Unsigned7702Tx(
-      from: defaultSender,
-      to: defaultSender,
+      from: defaultSender.ethAddress,
+      to: defaultSender.ethAddress,
       gasLimit: BigInt.from(21000),
       nonce: customNonce.toInt(),
-      value: value,
+      value: valueEtherAmount,
       data: calldata,
       maxFeePerGas: testGas,
       maxPriorityFeePerGas: testGas,
@@ -89,7 +86,7 @@ void main() {
       expect(encoded[4], equals(tx.gasLimit));
 
       // `to`
-      expect(encoded[5], equals(defaultSender.value));
+      expect(encoded[5], equals(defaultSender.ethAddress.value));
 
       // value, data, accessList
       expect(encoded[6], equals(tx.value!.getInWei));
@@ -119,7 +116,7 @@ void main() {
       final firstAuth = encodedAuthList.first as List<dynamic>;
       expect(firstAuth.length, equals(6));
       expect(firstAuth[0], equals(chainId));
-      expect(firstAuth[1], equals(implAddress.value));
+      expect(firstAuth[1], equals(implAddress.ethAddress.value));
       expect(firstAuth[2], equals(customNonce));
     });
 

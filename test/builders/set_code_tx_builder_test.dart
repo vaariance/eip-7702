@@ -21,7 +21,10 @@ void main() {
 
   setUp(() {
     web3 = MockWeb3Client();
-    ctx = Eip7702Context(delegateAddress: implAddress, web3Client: web3);
+    ctx = Eip7702Context(
+      delegateAddress: implAddress.ethAddress,
+      web3Client: web3,
+    );
 
     builder = SetCodeTxBuilder(ctx);
     signer = Signer.eth(ethKey);
@@ -40,7 +43,7 @@ void main() {
 
   group('prepareUnsigned', () {
     test('returns closure that uses nonceOverride and estimates gas', () async {
-      final sender = signer.ethPrivateKey.address;
+      final sender = signer.ethPrivateKey.address.with0x;
       final to = sender;
       when(
         () => web3.getGasInEIP1559(),
@@ -59,9 +62,9 @@ void main() {
       final unsigned = await prepareFn(value, calldata, 0);
 
       expect(unsigned.nonce, equals(nonceOverride.toInt()));
-      expect(unsigned.from, equals(sender));
-      expect(unsigned.to, equals(to));
-      expect(unsigned.value!.getInWei, equals(value.getInWei));
+      expect(unsigned.from, equals(sender.ethAddress));
+      expect(unsigned.to, equals(to.ethAddress));
+      expect(unsigned.value!.getInWei, equals(value));
       expect(unsigned.data, equals(calldata));
       expect(unsigned.gasLimit, equals(testGas.getInWei));
 
@@ -74,7 +77,7 @@ void main() {
 
   group('buildUnsigned', () {
     test('constructs Unsigned7702Tx and attaches authorizationList', () async {
-      final sender = signer.ethPrivateKey.address;
+      final sender = signer.ethPrivateKey.address.with0x;
       final to = sender;
 
       when(
@@ -82,8 +85,10 @@ void main() {
       ).thenAnswer((_) async => [slow, normal, fast]);
 
       when(
-        () =>
-            web3.getTransactionCount(sender, atBlock: const BlockNum.pending()),
+        () => web3.getTransactionCount(
+          sender.ethAddress,
+          atBlock: const BlockNum.pending(),
+        ),
       ).thenAnswer((_) async => customNonce.toInt());
 
       when(() => web3.getChainId()).thenAnswer((_) async => chainId);
@@ -92,7 +97,7 @@ void main() {
 
       final unsignedAuth = (
         chainId: chainId,
-        delegateAddress: ctx.delegateAddress,
+        delegateAddress: ctx.delegateAddress.with0x,
         nonce: customNonce,
       );
 
@@ -106,8 +111,8 @@ void main() {
         authorizationList: [authTuple],
       );
 
-      expect(unsignedTx.from, equals(sender));
-      expect(unsignedTx.to, equals(to));
+      expect(unsignedTx.from, equals(sender.ethAddress));
+      expect(unsignedTx.to, equals(to.ethAddress));
       expect(unsignedTx.gasLimit, equals(testGas.getInWei + baseAuthCost));
       expect(unsignedTx.nonce, equals(customNonce.toInt()));
       expect(unsignedTx.authorizationList.length, equals(1));
@@ -127,7 +132,7 @@ void main() {
         to: to,
         gasLimit: testGas.getInWei,
         nonce: 1,
-        value: value,
+        value: valueEtherAmount,
         data: calldata,
         maxFeePerGas: testGas,
         maxPriorityFeePerGas: testGas,
@@ -153,14 +158,16 @@ void main() {
 
   group('buildSignAndEncodeRaw', () {
     test('builds, signs and returns hex-encoded raw transaction', () async {
-      final sender = signer.ethPrivateKey.address;
+      final sender = signer.ethPrivateKey.address.with0x;
       final to = sender;
 
       when(() => web3.getChainId()).thenAnswer((_) async => chainId);
 
       when(
-        () =>
-            web3.getTransactionCount(sender, atBlock: const BlockNum.pending()),
+        () => web3.getTransactionCount(
+          sender.ethAddress,
+          atBlock: const BlockNum.pending(),
+        ),
       ).thenAnswer((_) async => customNonce.toInt());
 
       when(
@@ -171,7 +178,7 @@ void main() {
 
       final unsignedAuth = (
         chainId: chainId,
-        delegateAddress: ctx.delegateAddress,
+        delegateAddress: ctx.delegateAddress.with0x,
         nonce: customNonce,
       );
 

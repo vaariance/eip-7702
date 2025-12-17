@@ -8,9 +8,7 @@ import 'package:web3dart/web3dart.dart';
 import 'keys.dart';
 
 // simple smart account
-final EthereumAddress implAddress = EthereumAddress.fromHex(
-  '0xe6Cae83BdE06E4c305530e199D7217f42808555B',
-);
+final implAddress = '0xe6Cae83BdE06E4c305530e199D7217f42808555B';
 
 // erc 721 mint : execute -> safeMint
 final Uint8List calldata = hexToBytes(
@@ -18,22 +16,21 @@ final Uint8List calldata = hexToBytes(
 );
 
 // 0.001 eth
-final EtherAmount value = EtherAmount.fromInt(EtherUnit.ether, 0.001.toInt());
+final value = BigInt.from(0.001e18);
+final valueEtherAmount = EtherAmount.inWei(value);
 
 final Uint8List dummySignature = hexToBytes(
   "ee2eb84d326637ae9c4eb2febe1f74dc43e6bb146182ef757ebf0c7c6e0d29dc2530d8b5ec0ab1d0d6ace9359e1f9b117651202e8a7f1f664ce6978621c7d5fb1b",
 );
 
 // base sepolia
-final EthereumAddress nftAddress = EthereumAddress.fromHex(
-  '0xEBE46f55b40C0875354Ac749893fe45Ce28e1333',
-);
+final nftAddress = '0xEBE46f55b40C0875354Ac749893fe45Ce28e1333';
 
 final chainId = BigInt.from(84532);
 
 final customNonce = BigInt.from(0x78);
 
-final defaultSender = ethKey.address;
+final defaultSender = ethKey.address.with0x;
 
 final testGas = EtherAmount.fromInt(EtherUnit.gwei, 21000);
 

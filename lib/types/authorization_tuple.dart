@@ -39,11 +39,11 @@ typedef AuthorizationTuple =
 /// See also:
 ///  - https://eips.ethereum.org/EIPS/eip-7702
 typedef UnsignedAuthorization =
-    ({BigInt chainId, EthereumAddress delegateAddress, BigInt nonce});
+    ({BigInt chainId, HexString delegateAddress, BigInt nonce});
 
 extension AuthorizationTupleX on AuthorizationTuple {
   Map<String, dynamic> toMap() => {
-    "address": auth.delegateAddress.with0x,
+    "address": auth.delegateAddress,
     "chainId": "0x${auth.chainId.toRadixString(16)}",
     "nonce": "0x${auth.nonce.toRadixString(16)}",
     "r": "0x${signature.r.toRadixString(16)}",
