@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/vaariance/eip-7702/compare/v1.0.1...v1.1.0) (2025-12-17)
+
+
+### Features
+
+* add call method for delegated execution ([#5](https://github.com/vaariance/eip-7702/issues/5)) ([eb90840](https://github.com/vaariance/eip-7702/commit/eb90840c419b9254a8b0a2f7e074b2783ac5e841))
+
 ## [1.0.1](https://github.com/vaariance/eip-7702/compare/v1.0.0...v1.0.1) (2025-12-13)
 
 
