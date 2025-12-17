@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:eip7702/builder.dart';
 import 'package:test/test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:wallet/wallet.dart';
 import 'package:web3dart/web3dart.dart';
 
 import 'package:eip7702/eip7702.dart';
@@ -174,8 +173,9 @@ void main() {
           authorizationList: any(named: 'authorizationList'),
         ),
       ).thenAnswer((invocation) async {
-        final authList = invocation.namedArguments[#authorizationList]
-            as List<AuthorizationTuple>;
+        final authList =
+            invocation.namedArguments[#authorizationList]
+                as List<AuthorizationTuple>;
         expect(authList, isEmpty);
         return '0xcallraw';
       });
@@ -257,10 +257,7 @@ void main() {
         () => web3.makeRPCCall('eth_sendRawTransaction', ['0xtransferraw']),
       ).thenAnswer((_) async => '0xtransferhash');
 
-      final result = await client.call(
-        txSigner: signer,
-        to: nftAddress,
-      );
+      final result = await client.call(txSigner: signer, to: nftAddress);
 
       expect(result, equals('0xtransferhash'));
 
@@ -487,21 +484,25 @@ void main() {
   });
 
   group('create7702Client', () {
-    test('creates client with managed Web3Client when customClient is null', () {
-      final client = create7702Client(
-        rpcUrl: 'https://rpc.example.com',
-        delegateAddress: implAddress,
-      );
+    test(
+      'creates client with managed Web3Client when customClient is null',
+      () {
+        final client = create7702Client(
+          rpcUrl: 'https://rpc.example.com',
+          delegateAddress: implAddress,
+        );
 
-      expect(client, isA<Eip7702Client>());
-      expect(client.ctx.delegateAddress, equals(implAddress.ethAddress));
-      expect(client.ctx.web3Client, isNotNull);
-      expect(client.ctx.transformer, isNull);
-      expect(client.ctx.chainId, isNull);
-    });
+        expect(client, isA<Eip7702Client>());
+        expect(client.ctx.delegateAddress, equals(implAddress.ethAddress));
+        expect(client.ctx.web3Client, isNotNull);
+        expect(client.ctx.transformer, isNull);
+        expect(client.ctx.chainId, isNull);
+      },
+    );
 
     test('creates client with transformer in managed mode', () {
-      BigInt transformer(BigInt gas) => gas * BigInt.from(15) ~/ BigInt.from(10);
+      BigInt transformer(BigInt gas) =>
+          gas * BigInt.from(15) ~/ BigInt.from(10);
 
       final client = create7702Client(
         rpcUrl: 'https://rpc.example.com',

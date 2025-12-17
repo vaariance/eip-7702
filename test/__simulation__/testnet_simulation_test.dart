@@ -16,7 +16,6 @@
 import 'package:eip7702/builder.dart';
 import 'package:eip7702/eip7702.dart';
 import 'package:test/test.dart';
-import 'package:wallet/wallet.dart';
 import 'package:web3dart/web3dart.dart';
 
 void main() {

@@ -11,10 +11,10 @@ To Learn more about EIP-7702 visit: <https://eips.ethereum.org/EIPS/eip-7702>
 ## Usage - The happy path
 
 ```dart
-final client = await Eip7702Client.create(
+final client = create7702Client(
   rpcUrl: 'https://rpc.mychain.lfg/apikey=secretish...',
   delegateAddress: mySmartAccountImpl,
-  // optional: customWeb3Client will be priotized if present
+  // optional: customClient will be prioritized if present
 );
 
 final signer = Signer.raw(myPrivateKeyBytes);
@@ -35,17 +35,39 @@ This automatically:
 - Produces a raw hex payload
 - Sends it to `eth_sendRawTransaction`
 
+### Subsequent calls on already-delegated EOAs
+
+Once an EOA is delegated, you can use the `call()` method for subsequent transactions without rebuilding authorization:
+
+```dart
+// First time: delegate and call
+await client.delegateAndCall(
+  signer: signer,
+  to: contract,
+  data: calldata,
+);
+
+// Subsequent calls: just execute using existing delegation
+final txHash = await client.call(
+  txSigner: signer,
+  to: contract,
+  data: anotherCalldata,
+);
+```
+
+The `call()` method skips authorization construction and directly executes on the delegated EOA, making it more efficient for repeated operations.
+
 ## Usage - Low Level Control
 
 For applications that want more granular control, you can use each builder directly.
 
-1. Build and sign authorization manually
+### 1. Build and sign authorization manually
 
 ```dart
-final ctx = await Eip7702Context.forge(
+final ctx = create7702Context(
   rpcUrl: rpc,
   delegateAddress: myImpl,
-  // transformer = (gasLimit) => gasLimt // for granular control over gas 
+  // transformer: (gasLimit) => gasLimit // for granular control over gas
 );
 
 final authBuilder = AuthorizationBuilder(ctx);
@@ -62,7 +84,7 @@ final auth = signAuthorization(signer, unsignedAuth);
 
 This gives you the raw `(auth, signature)` tuple you can insert anywhere you like.
 
-2. Build and sign the typed EIP-7702 transaction manually
+### 2. Build and sign the typed EIP-7702 transaction manually
 
 ```dart
 final txBuilder = SetCodeTxBuilder(ctx);
