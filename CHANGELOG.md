@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/vaariance/eip-7702/compare/v1.1.0...v1.1.1) (2025-12-17)
+
+
+### Bug Fixes
+
+* remove unused wallet package imports and update readme ([5c9e260](https://github.com/vaariance/eip-7702/commit/5c9e260d67bde3b4a4680533cbbc8b25ab1796ff))
+
 ## [1.1.0](https://github.com/vaariance/eip-7702/compare/v1.0.1...v1.1.0) (2025-12-17)
 
 
