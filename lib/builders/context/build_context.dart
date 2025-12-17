@@ -17,7 +17,7 @@ typedef GasTransformFn = BigInt Function(BigInt);
 ///    owned accounts (EOAs) will delegate to via EIP-7702.
 ///  - [web3Client] — the active [Web3Client] instance for RPC access.
 ///  - [chainId] — the connected network’s chain ID, cached for reuse.
-///  - [transformer] - usefull for overriding the estimated gas
+///  - [transformer] - useful for overriding the estimated gas
 ///
 /// This context is typically supplied to builders such as
 /// `AuthorizationBuilder` and `SetCodeTxBuilder` via [Eip7702Base], and
@@ -25,13 +25,12 @@ typedef GasTransformFn = BigInt Function(BigInt);
 /// state.
 ///
 /// ### Creating a context
-/// Most applications should use the [forge] factory, which creates a
-/// [Web3Client] internally and automatically resolves the chain ID:
+/// Most applications should use the [create7702Context] factory, which creates a [Web3Client] internally:
 ///
 /// ```dart
-/// final ctx = await Eip7702Context.forge(
-///   rpcUrl: 'https://rpc.example',
-///   delegateAddress: implAddress,
+/// final ctx = create7702Context(
+///   rpcUrl: 'https://rpc.example.com',
+///   delegateAddress: '0x1234...',
 /// );
 /// ```
 class Eip7702Context {
@@ -46,19 +45,40 @@ class Eip7702Context {
     this.chainId,
     this.transformer,
   });
-
-  static Future<Eip7702Context> forge({
-    required String rpcUrl,
-    required EthereumAddress delegateAddress,
-    GasTransformFn? transformer,
-  }) async {
-    final client = Web3Client(rpcUrl, http.Client());
-    final chainId = await client.getChainId();
-    return Eip7702Context(
-      delegateAddress: delegateAddress,
-      web3Client: client,
-      chainId: chainId,
-      transformer: transformer,
-    );
-  }
 }
+
+/// Creates an [Eip7702Context] with a managed [Web3Client] instance.
+///
+/// This factory function is the recommended way to instantiate an
+/// [Eip7702Context] for most applications. It handles:
+///  - Converting the hex-formatted [delegateAddress] to an [EthereumAddress]
+///  - Creating a [Web3Client] with the provided [rpcUrl]
+///  - Optionally applying a [transformer] for gas estimation adjustments
+///
+/// The created [Web3Client] uses a default HTTP client internally.
+///
+/// Parameters:
+///  - [rpcUrl] — the Ethereum JSON-RPC endpoint URL.
+///  - [delegateAddress] — the implementation contract address as a hex string.
+///  - [transformer] — optional function to modify gas estimates before
+///    transaction submission (e.g., multiplying by 1.2 for a 20% buffer).
+///
+/// Returns a fully configured [Eip7702Context] ready for use with builders.
+///
+/// ### Example
+/// ```dart
+/// final context = create7702Context(
+///   rpcUrl: 'https://mainnet.infura.io/v3/YOUR_KEY',
+///   delegateAddress: '0x1234...',
+///   transformer: (gas) => gas * BigInt.from(12) ~/ BigInt.from(10), // 20% buffer
+/// );
+/// ```
+Eip7702Context create7702Context({
+  required String rpcUrl,
+  required HexString delegateAddress,
+  GasTransformFn? transformer,
+}) => Eip7702Context(
+  delegateAddress: delegateAddress.ethAddress,
+  web3Client: Web3Client(rpcUrl, http.Client()),
+  transformer: transformer,
+);

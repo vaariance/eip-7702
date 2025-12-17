@@ -56,9 +56,9 @@ abstract class Eip7702ClientBase {
   /// ```
   Future<HexString> delegateAndCall({
     required Signer signer,
-    required EthereumAddress to,
+    required HexString to,
     Uint8List? data,
-    EtherAmount? value,
+    BigInt? value,
     Signer? txSigner,
   });
 
@@ -102,5 +102,52 @@ abstract class Eip7702ClientBase {
   Future<HexString> revokeDelegation({
     required Signer signer,
     Signer? txSigner,
+  });
+
+  /// Executes a contract call from an already-delegated EOA without creating
+  /// a new authorization tuple.
+  ///
+  /// This method is used when the EOA has already been delegated to
+  /// [Eip7702Context.delegateAddress] in a previous transaction, and you
+  /// simply want to execute a call or transfer value using the delegated
+  /// implementation.
+  ///
+  /// Unlike [delegateAndCall], this method:
+  ///  - Does NOT build or sign an authorization tuple
+  ///  - Does NOT check current delegation status
+  ///  - Assumes the EOA is already properly delegated
+  ///
+  /// The workflow:
+  ///  1. Constructs an EIP-7702 transaction using [SetCodeTxBuilder] with an
+  ///     empty authorization list.
+  ///  2. Signs the transaction with [txSigner].
+  ///  3. Broadcasts the transaction via `eth_sendRawTransaction`.
+  ///
+  /// Returns the transaction hash as a hex string.
+  ///
+  /// Parameters:
+  ///  - [txSigner] — signer used to sign the transaction.
+  ///  - [to] — the address the transaction should call or transfer value to.
+  ///  - [data] — optional calldata for the execution.
+  ///  - [value] — optional ether value for the call.
+  ///
+  /// ### Example
+  /// ```dart
+  /// // First delegate (in a previous transaction)
+  /// await client.delegateAndCall(signer: mySigner, to: contract);
+  ///
+  /// // Later, execute calls using the delegation
+  /// final hash = await client.call(
+  ///   txSigner: mySigner,
+  ///   to: contract,
+  ///   data: encodedCall,
+  /// );
+  /// print('Call tx: $hash');
+  /// ```
+  Future<HexString> call({
+    required Signer txSigner,
+    required HexString to,
+    Uint8List? data,
+    BigInt? value,
   });
 }
