@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/vaariance/eip-7702/compare/v1.1.1...v1.1.2) (2025-12-23)
+
+
+### Bug Fixes
+
+* **signer_interface:** remove redundant ethPrivateKey getter from CustomSigner ([254893a](https://github.com/vaariance/eip-7702/commit/254893a1cb101e0482b6ebbad6009dc8a83a8f0f))
+
 ## [1.1.1](https://github.com/vaariance/eip-7702/compare/v1.1.0...v1.1.1) (2025-12-17)
 
 
