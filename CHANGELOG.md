@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/vaariance/eip-7702/compare/v1.1.2...v1.1.3) (2025-12-25)
+
+
+### Bug Fixes
+
+* **signature:** remove s normalization in EIP7702MsgSignature ([d568278](https://github.com/vaariance/eip-7702/commit/d56827890e7c4a8d34c7fc5b453731c6cd91675a))
+
 ## [1.1.2](https://github.com/vaariance/eip-7702/compare/v1.1.1...v1.1.2) (2025-12-23)
 
 
