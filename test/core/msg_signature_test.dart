@@ -61,24 +61,6 @@ void main() {
 
       expect(() => EIP7702MsgSignature.forge(r, s, 29), throwsArgumentError);
     });
-
-    test('normalizes s if s is greater than sep256k1n half order', () {
-      BigInt sep256k1n = BigInt.parse(
-        'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
-        radix: 16,
-      );
-
-      final r = BigInt.from(9);
-      // s = secp256k1n / 2 + 1 (greater than half order)
-      final s = (sep256k1n >> 1) + BigInt.one; // 169
-
-      final sig = EIP7702MsgSignature.forge(r, s, 0);
-
-      final expectedS = sep256k1n - s; // 168;
-      expect(sig.s, equals(expectedS));
-      expect(sig.v, equals(28));
-      expect(sig.yParity, equals(1));
-    });
   });
 
   group('EIP7702MsgSignature.fromUint8List', () {

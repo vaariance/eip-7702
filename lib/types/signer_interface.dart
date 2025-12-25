@@ -22,30 +22,14 @@ class EIP7702MsgSignature extends MsgSignature {
 
   EIP7702MsgSignature(super.r, super.s, super.v, this.yParity);
 
-  static final BigInt _secp256k1n = BigInt.parse(
-    'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
-    radix: 16,
-  );
-
-  static final BigInt _halfSecp256k1n = _secp256k1n >> 1;
-
-  static EIP7702MsgSignature _normalize(BigInt r, BigInt s, int yParity) {
-    if (s > _halfSecp256k1n) {
-      s = _secp256k1n - s;
-      yParity ^= 1;
-    }
-    final vNorm = 27 + yParity;
-    return EIP7702MsgSignature(r, s, vNorm, yParity);
-  }
-
   factory EIP7702MsgSignature.forge(BigInt r, BigInt s, int v) {
     int yParity = (v == 0 || v == 1) ? v : (v - 27);
 
     if (yParity != 0 && yParity != 1) {
       throw ArgumentError.value(v, 'v', 'Must be 0/1 or 27/28');
     }
-
-    return _normalize(r, s, yParity);
+    final vNorm = 27 + yParity;
+    return EIP7702MsgSignature(r, s, vNorm, yParity);
   }
 
   factory EIP7702MsgSignature.fromUint8List(Uint8List data) {
